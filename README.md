@@ -60,6 +60,7 @@ root/
 In order to access the necessary data on s3, you will need to configure your AWS credentials.
 You can do this by running `aws configure` and filling in the necessary information.
 We will provide you with individual `access_key_id` and `secret_access_key`.
+Specify as default region `us-east-1`.
 
 After this you should be able to successfully run the following command:
 ```bash
@@ -93,7 +94,11 @@ Start by writing your cleaning transformation by reading/writing local files and
 Given the input data for 1 tag, the goal is to create 1 json document per question containing the title, question body and the response body.
 So your goal is to extract the relevant fields from both the questions and answers and join them together using the `question_id` field.
 
-Write the json documents per question again to s3 under path `cleaned/<user>/{tag}`
+> **_NOTE:_** When reading from s3, make sure to use `s3a://` prefix.
+
+> **_NOTE:_** In order for your job to access the s3 bucket, you will need to export the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
+
+Write the cleaned json documents per question again to s3 under path `cleaned/<user>/{tag}`
 
 If you are confident in your code, the next step is scheduling it using Airflow
 
