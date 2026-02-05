@@ -7,10 +7,11 @@ from capstonellm.common.catalog import llm_bucket
 from capstonellm.common.spark import ClosableSparkSession
 import os
 import boto3
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# from dotenv import load_dotenv
+
+# # Load environment variables from .env file
+# load_dotenv()
 
 logger = logging.getLogger(__name__)
 
