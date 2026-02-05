@@ -10,3 +10,7 @@ plugins
 build
 
 *.egg-info
+
+data
+
+aws
