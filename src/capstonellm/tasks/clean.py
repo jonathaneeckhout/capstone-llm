@@ -6,6 +6,7 @@ import json
 from capstonellm.common.catalog import llm_bucket
 from capstonellm.common.spark import ClosableSparkSession
 import os
+import boto3
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -45,14 +46,17 @@ def clean(spark: SparkSession, environment: str, tag: str):
         answers_df.body.alias("answer_body"),
     )
 
-    # Create output directory if it doesn't exist
-    output_dir = "data/parsed/"
-    os.makedirs(output_dir, exist_ok=True)
+    # Initialize S3 client
+    s3_client = boto3.client("s3")
+    bucket_name = "dataminded-academy-capstone-llm-data-us"
+
+    # Set username
+    username = "jonathan"
 
     # Collect all rows from the dataframe
     rows = result_df.collect()
 
-    # Save each row as a separate JSON file
+    # Upload each row as a separate JSON file to S3
     for row in rows:
         question_id = row["question_id"]
 
@@ -64,12 +68,21 @@ def clean(spark: SparkSession, environment: str, tag: str):
             "answer_body": row["answer_body"],
         }
 
-        # Save to file named <question_id>.json
-        filename = f"{output_dir}{question_id}.json"
-        with open(filename, "w", encoding="utf-8") as f:
-            json.dump(json_data, f, ensure_ascii=False, indent=2)
+        # Upload to S3 under cleaned/<user>/{tag}/{question_id}.json
+        s3_key = f"cleaned/{username}/{tag}/{question_id}.json"
+        json_string = json.dumps(json_data, ensure_ascii=False, indent=2)
 
-    print(f"Created {len(rows)} JSON files in {output_dir}")
+        s3_client.put_object(
+            Bucket=bucket_name,
+            Key=s3_key,
+            Body=json_string.encode("utf-8"),
+            ContentType="application/json",
+        )
+        print(f"Uploaded s3://{bucket_name}/{s3_key}")
+
+    print(
+        f"Successfully uploaded {len(rows)} JSON files to S3 under cleaned/{username}/{tag}/"
+    )
 
 
 def main():
