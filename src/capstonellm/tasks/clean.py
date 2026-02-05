@@ -6,12 +6,19 @@ import json
 from capstonellm.common.catalog import llm_bucket
 from capstonellm.common.spark import ClosableSparkSession
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 
 def clean(spark: SparkSession, environment: str, tag: str):
-    questions_df = spark.read.json("data/questions.json")
+    # Read directly from S3
+    questions_df = spark.read.json(
+        "s3a://dataminded-academy-capstone-llm-data-us/input/dbt/questions.json"
+    )
 
     # Explode the items array to get one row per item
     questions_df = questions_df.select(explode("items").alias("item"))
@@ -19,7 +26,9 @@ def clean(spark: SparkSession, environment: str, tag: str):
     # Flatten the struct to get individual columns
     questions_df = questions_df.select("item.*")
 
-    answers_df = spark.read.json("data/answers.json")
+    answers_df = spark.read.json(
+        "s3a://dataminded-academy-capstone-llm-data-us/input/dbt/answers.json"
+    )
 
     # Explode the items array to get one row per item
     answers_df = answers_df.select(explode("items").alias("item"))
